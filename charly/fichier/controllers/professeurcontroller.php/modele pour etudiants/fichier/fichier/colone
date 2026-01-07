@@ -1,0 +1,57 @@
+<?php
+class ColonneModel {
+    private $db;
+    
+    public function __construct() {
+        require_once __DIR__ . '/../config/database.php';
+        $this->db = Database::getConnection();
+    }
+    
+    public function getColonnesByMatiere($matiereId) {
+        $sql = "SELECT cc.id, cc.nom_colonne, cc.coefficient, cc.type_colonne,
+                       cc.date_evaluation, cc.ponderation
+                FROM configuration_colonnes cc
+                WHERE cc.matiere_id = ?
+                AND cc.actif = 1
+                ORDER BY cc.ordre ASC, cc.id ASC";
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$matiereId]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getColonnesByMatiere: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    public function getColonneById($colonneId) {
+        $sql = "SELECT * FROM configuration_colonnes WHERE id = ?";
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$colonneId]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getColonneById: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    public function verifierColonneMatiere($colonneId, $matiereId) {
+        $sql = "SELECT COUNT(*) as count 
+                FROM configuration_colonnes 
+                WHERE id = ? AND matiere_id = ?";
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$colonneId, $matiereId]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['count'] > 0;
+        } catch (PDOException $e) {
+            error_log("Erreur verifierColonneMatiere: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+?>

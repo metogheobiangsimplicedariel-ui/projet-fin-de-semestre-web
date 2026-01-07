@@ -1,0 +1,193 @@
+class ValidationNotes {
+    constructor() {
+        this.regles = {
+            noteMin: 0,
+            noteMax: 20,
+            decimalesMax: 2,
+            valeursAutorisees: ['', 'ABS', 'NE'] // Vide, Absent, Non Évalué
+        };
+    }
+    
+    validerNote(input) {
+        const valeur = input.value.trim();
+        const resultat = {
+            valide: true,
+            message: '',
+            valeurFormatee: valeur
+        };
+        
+        // Cas spécial : valeurs textuelles
+        if (valeur === 'ABS' || valeur === 'NE') {
+            return resultat;
+        }
+        
+        // Cas vide
+        if (valeur === '') {
+            return resultat;
+        }
+        
+        // Vérifier que c'est un nombre
+        const nombre = parseFloat(valeur);
+        if (isNaN(nombre)) {
+            resultat.valide = false;
+            resultat.message = 'Veuillez entrer un nombre valide';
+            return resultat;
+        }
+        
+        // Vérifier les décimales
+        const parties = valeur.split('.');
+        if (parties.length > 1 && parties[1].length > this.regles.decimalesMax) {
+            resultat.valide = false;
+            resultat.message = `Maximum ${this.regles.decimalesMax} décimales`;
+            return resultat;
+        }
+        
+        // Vérifier la plage
+        if (nombre < this.regles.noteMin || nombre > this.regles.noteMax) {
+            resultat.valide = false;
+            resultat.message = `La note doit être entre ${this.regles.noteMin} et ${this.regles.noteMax}`;
+            return resultat;
+        }
+        
+        // Formater la valeur
+        resultat.valeurFormatee = nombre.toFixed(this.regles.decimalesMax);
+        
+        return resultat;
+    }
+    
+    validerToutesLesNotes() {
+        const inputs = document.querySelectorAll('.note-input');
+        const erreurs = [];
+        
+        inputs.forEach((input, index) => {
+            const validation = this.validerNote(input);
+            if (!validation.valide) {
+                erreurs.push({
+                    input: input,
+                    message: validation.message,
+                    ligne: Math.floor(index / document.querySelectorAll('.note-input').length) + 1
+                });
+                
+                input.classList.add('is-invalid');
+            } else {
+                input.classList.remove('is-invalid');
+            }
+        });
+        
+        return {
+            valide: erreurs.length === 0,
+            erreurs: erreurs,
+            totalNotes: inputs.length
+        };
+    }
+    
+    afficherErreurs(erreurs) {
+        if (erreurs.length === 0) return;
+        
+        let message = '<strong>Erreurs de validation :</strong><ul>';
+        erreurs.forEach(erreur => {
+            message += `<li>Ligne ${erreur.ligne}: ${erreur.message}</li>`;
+        });
+        message += '</ul>';
+        
+        this.afficherNotification(message, 'danger');
+    }
+    
+    afficherNotification(message, type) {
+        // Créer ou réutiliser une div de notification
+        let notification = document.getElementById('notification-validation');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'notification-validation';
+            notification.className = 'alert alert-dismissible fade show';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                max-width: 400px;
+            `;
+            notification.innerHTML = `
+                <div class="notification-content"></div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(notification);
+        }
+        
+        const content = notification.querySelector('.notification-content');
+        notification.className = `alert alert-${type} alert-dismissible fade show`;
+        content.innerHTML = message;
+        
+        // Auto-dismiss après 5 secondes
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 150);
+            }
+        }, 5000);
+    }
+    
+    activerValidationTempsReel() {
+        document.querySelectorAll('.note-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const validation = this.validerNote(e.target);
+                
+                if (!validation.valide) {
+                    e.target.classList.add('is-invalid');
+                    this.afficherErreurChamp(e.target, validation.message);
+                } else {
+                    e.target.classList.remove('is-invalid');
+                    this.cacherErreurChamp(e.target);
+                    
+                    // Mettre à jour la valeur formatée si nécessaire
+                    if (validation.valeurFormatee !== e.target.value) {
+                        e.target.value = validation.valeurFormatee;
+                    }
+                }
+            });
+        });
+    }
+    
+    afficherErreurChamp(input, message) {
+        let erreurDiv = input.parentNode.querySelector('.invalid-feedback');
+        if (!erreurDiv) {
+            erreurDiv = document.createElement('div');
+            erreurDiv.className = 'invalid-feedback';
+            input.parentNode.appendChild(erreurDiv);
+        }
+        erreurDiv.textContent = message;
+    }
+    
+    cacherErreurChamp(input) {
+        const erreurDiv = input.parentNode.querySelector('.invalid-feedback');
+        if (erreurDiv) {
+            erreurDiv.remove();
+        }
+    }
+}
+
+// Initialisation globale
+const validateur = new ValidationNotes();
+
+// Fonction de validation avant sauvegarde
+function validerAvantSauvegarde(input) {
+    const validation = validateur.validerNote(input);
+    
+    if (!validation.valide) {
+        validateur.afficherNotification(validation.message, 'danger');
+        input.focus();
+        input.select();
+        return false;
+    }
+    
+    return true;
+}
+
+// Exporter pour utilisation globale
+window.ValidationNotes = ValidationNotes;
+window.validateur = validateur;
+window.validerAvantSauvegarde = validerAvantSauvegarde;

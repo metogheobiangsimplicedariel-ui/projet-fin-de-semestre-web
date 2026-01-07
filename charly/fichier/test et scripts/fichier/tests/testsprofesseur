@@ -1,0 +1,241 @@
+<?php
+// Activer l'affichage des erreurs
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+echo "<!DOCTYPE html>
+<html>
+<head>
+    <title>Tests Module Professeur</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { border: 1px solid #ddd; margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        h2 { color: #333; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1> Tests Module Professeur</h1>
+    <p>Date : " . date('d/m/Y H:i:s') . "</p>
+    <hr>";
+
+// Inclure les fichiers nécessaires
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/MatiereModel.php';
+require_once __DIR__ . '/../models/EtudiantModel.php';
+require_once __DIR__ . '/../models/ColonneModel.php';
+require_once __DIR__ . '/../models/NoteModel.php';
+require_once __DIR__ . '/../models/PermissionModel.php';
+
+class TestProfesseur {
+    private $matiereModel;
+    private $etudiantModel;
+    private $colonneModel;
+    private $noteModel;
+    private $permissionModel;
+    
+    public function __construct() {
+        $this->matiereModel = new MatiereModel();
+        $this->etudiantModel = new EtudiantModel();
+        $this->colonneModel = new ColonneModel();
+        $this->noteModel = new NoteModel();
+        $this->permissionModel = new PermissionModel();
+    }
+    
+    public function runAllTests() {
+        $this->testConnexionBDD();
+        $this->testMatiereModel();
+        $this->testEtudiantModel();
+        $this->testColonneModel();
+        $this->testNoteModel();
+        $this->testPermissionModel();
+        $this->testIntegration();
+    }
+    
+    private function afficherResultat($titre, $resultat, $details = '') {
+        $classe = $resultat ? 'success' : 'error';
+        $icone = $resultat ? '' : '';
+        
+        echo "<div class='test $classe'>
+                <h3>$icone $titre</h3>
+                <p>Résultat : " . ($resultat ? 'SUCCÈS' : 'ÉCHEC') . "</p>";
+        
+        if ($details) {
+            echo "<details><summary>Détails</summary><pre>$details</pre></details>";
+        }
+        
+        echo "</div>";
+    }
+    
+    private function testConnexionBDD() {
+        try {
+            $db = Database::getConnection();
+            $result = $db->query("SELECT 1")->fetch();
+            $this->afficherResultat(
+                "Connexion à la base de données",
+                true,
+                "Connexion établie avec succès"
+            );
+            return true;
+        } catch (Exception $e) {
+            $this->afficherResultat(
+                "Connexion à la base de données",
+                false,
+                "Erreur : " . $e->getMessage()
+            );
+            return false;
+        }
+    }
+    
+    private function testMatiereModel() {
+        // Test 1: Récupération des matières d'un professeur
+        $matieres = $this->matiereModel->getMatieresByProfesseur(2);
+        $test1 = is_array($matieres);
+        
+        // Test 2: Structure des données
+        $test2 = true;
+        if (!empty($matieres)) {
+            $premiereMatiere = $matieres[0];
+            $test2 = isset($premiereMatiere['id'], $premiereMatiere['nom'], $premiereMatiere['code']);
+        }
+        
+        $resultat = $test1 && $test2;
+        $details = "Matières récupérées : " . count($matieres) . "\n";
+        $details .= print_r($matieres, true);
+        
+        $this->afficherResultat("Modèle MatiereModel", $resultat, $details);
+    }
+    
+    private function testEtudiantModel() {
+        // Test avec une matière existante
+        $etudiants = $this->etudiantModel->getEtudiantsByMatiere(1);
+        $test1 = is_array($etudiants);
+        
+        // Test structure
+        $test2 = true;
+        if (!empty($etudiants)) {
+            $premierEtudiant = $etudiants[0];
+            $test2 = isset($premierEtudiant['id'], $premierEtudiant['nom'], $premierEtudiant['prenom']);
+        }
+        
+        $resultat = $test1 && $test2;
+        $details = "Étudiants récupérés : " . count($etudiants) . "\n";
+        
+        $this->afficherResultat("Modèle EtudiantModel", $resultat, $details);
+    }
+    
+    private function testColonneModel() {
+        $colonnes = $this->colonneModel->getColonnesByMatiere(1);
+        $test1 = is_array($colonnes);
+        
+        $test2 = true;
+        if (!empty($colonnes)) {
+            $premiereColonne = $colonnes[0];
+            $test2 = isset($premiereColonne['id'], $premiereColonne['nom_colonne'], $premiereColonne['coefficient']);
+        }
+        
+        $resultat = $test1 && $test2;
+        $details = "Colonnes récupérées : " . count($colonnes) . "\n";
+        $details .= print_r($colonnes, true);
+        
+        $this->afficherResultat("Modèle ColonneModel", $resultat, $details);
+    }
+    
+    private function testNoteModel() {
+        // Test sauvegarde
+        $testSauvegarde = $this->noteModel->sauvegarderNote(1, 1, 15.5, 2);
+        
+        // Test récupération
+        $notes = $this->noteModel->getNotesByMatiere(1);
+        $testRecup = is_array($notes);
+        
+        // Test note spécifique
+        $noteSpecifique = $this->noteModel->getNoteEtudiantColonne(1, 1);
+        $testNoteSpec = $noteSpecifique !== null;
+        
+        $resultat = $testSauvegarde && $testRecup && $testNoteSpec;
+        $details = "Sauvegarde : " . ($testSauvegarde ? "OK" : "ÉCHEC") . "\n";
+        $details .= "Récupération : " . ($testRecup ? "OK" : "ÉCHEC") . "\n";
+        $details .= "Note spécifique : " . ($testNoteSpec ? "OK" : "ÉCHEC") . "\n";
+        
+        $this->afficherResultat("Modèle NoteModel", $resultat, $details);
+    }
+    
+    private function testPermissionModel() {
+        // Test permission
+        $permission = $this->permissionModel->verifierPermissionProfesseur(2, 1, 1);
+        
+        $resultat = is_bool($permission);
+        $details = "Permission vérifiée : " . ($permission ? "ACCORDÉE" : "REFUSÉE") . "\n";
+        
+        $this->afficherResultat("Modèle PermissionModel", $resultat, $details);
+    }
+    
+    private function testIntegration() {
+        echo "<div class='test warning'>
+                <h3> Test d'intégration complète</h3>";
+        
+        // Scénario complet
+        $scenario = [];
+        
+        // 1. Récupérer matières du professeur 2
+        $matieres = $this->matiereModel->getMatieresByProfesseur(2);
+        $scenario[] = "1. Matières du professeur : " . count($matieres) . " trouvée(s)";
+        
+        if (!empty($matieres)) {
+            $matiereId = $matieres[0]['id'];
+            
+            // 2. Récupérer étudiants de cette matière
+            $etudiants = $this->etudiantModel->getEtudiantsByMatiere($matiereId);
+            $scenario[] = "2. Étudiants dans la matière : " . count($etudiants);
+            
+            // 3. Récupérer colonnes
+            $colonnes = $this->colonneModel->getColonnesByMatiere($matiereId);
+            $scenario[] = "3. Colonnes configurées : " . count($colonnes);
+            
+            if (!empty($etudiants) && !empty($colonnes)) {
+                // 4. Tester une sauvegarde
+                $etudiantId = $etudiants[0]['id'];
+                $colonneId = $colonnes[0]['id'];
+                
+                $sauvegarde = $this->noteModel->sauvegarderNote($etudiantId, $colonneId, 12.5, 2);
+                $scenario[] = "4. Sauvegarde test : " . ($sauvegarde ? "RÉUSSIE" : "ÉCHOUÉE");
+                
+                // 5. Vérifier permission
+                $permission = $this->permissionModel->verifierPermissionProfesseur(2, $matiereId, $colonneId);
+                $scenario[] = "5. Permission : " . ($permission ? "OK" : "NON AUTORISÉ");
+                
+                // 6. Vérifier la note sauvegardée
+                $noteVerif = $this->noteModel->getNoteEtudiantColonne($etudiantId, $colonneId);
+                $scenario[] = "6. Note vérifiée : " . ($noteVerif ? $noteVerif['valeur'] : "NON TROUVÉE");
+            }
+        }
+        
+        echo "<ul>";
+        foreach ($scenario as $etape) {
+            echo "<li>$etape</li>";
+        }
+        echo "</ul>";
+        
+        echo "<p><strong>Conclusion :</strong> " . (count($scenario) >= 6 ? " Scénario complet réussi" : " Scénario partiel") . "</p>";
+        echo "</div>";
+    }
+}
+
+// Exécuter les tests
+echo "<h2>Exécution des tests...</h2>";
+$testeur = new TestProfesseur();
+$testeur->runAllTests();
+
+echo "<hr>
+    <div class='test'>
+        <h3> Résumé des tests</h3>
+        <p>Tests exécutés à " . date('H:i:s') . "</p>
+        <p>Consultez la console PHP pour les erreurs détaillées.</p>
+    </div>";
+
+echo "</body></html>";
+?>

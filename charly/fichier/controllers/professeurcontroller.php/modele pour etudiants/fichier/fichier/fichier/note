@@ -1,0 +1,93 @@
+<?php
+class NoteModel {
+    private $db;
+    
+    public function __construct() {
+        require_once __DIR__ . '/../config/database.php';
+        $this->db = Database::getConnection();
+    }
+    
+    public function getNotesByMatiere($matiereId) {
+        $sql = "SELECT n.etudiant_id, n.colonne_id, n.valeur, n.date_saisie, n.saisie_par
+                FROM notes n
+                INNER JOIN configuration_colonnes cc ON n.colonne_id = cc.id
+                WHERE cc.matiere_id = ?
+                ORDER BY n.etudiant_id, n.colonne_id";
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$matiereId]);
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Organiser par étudiant et colonne
+            $notes = [];
+            foreach ($rows as $row) {
+                $notes[$row['etudiant_id']][$row['colonne_id']] = [
+                    'valeur' => $row['valeur'],
+                    'date_saisie' => $row['date_saisie'],
+                    'saisie_par' => $row['saisie_par']
+                ];
+            }
+            return $notes;
+        } catch (PDOException $e) {
+            error_log("Erreur getNotesByMatiere: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    public function getNoteEtudiantColonne($etudiantId, $colonneId) {
+        $sql = "SELECT * FROM notes 
+                WHERE etudiant_id = ? AND colonne_id = ?";
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$etudiantId, $colonneId]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Erreur getNoteEtudiantColonne: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    public function sauvegarderNote($etudiantId, $colonneId, $valeur, $professeurId) {
+        // Vérifier si note existe déjà
+        $noteExistante = $this->getNoteEtudiantColonne($etudiantId, $colonneId);
+        
+        if ($noteExistante) {
+            // Mise à jour
+            $sql = "UPDATE notes 
+                    SET valeur = ?, date_saisie = NOW(), saisie_par = ?
+                    WHERE etudiant_id = ? AND colonne_id = ?";
+        } else {
+            // Insertion
+            $sql = "INSERT INTO notes (etudiant_id, colonne_id, valeur, date_saisie, saisie_par)
+                    VALUES (?, ?, ?, NOW(), ?)";
+        }
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            
+            if ($noteExistante) {
+                return $stmt->execute([$valeur, $professeurId, $etudiantId, $colonneId]);
+            } else {
+                return $stmt->execute([$etudiantId, $colonneId, $valeur, $professeurId]);
+            }
+        } catch (PDOException $e) {
+            error_log("Erreur sauvegarderNote: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    public function supprimerNote($etudiantId, $colonneId) {
+        $sql = "DELETE FROM notes WHERE etudiant_id = ? AND colonne_id = ?";
+        
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$etudiantId, $colonneId]);
+        } catch (PDOException $e) {
+            error_log("Erreur supprimerNote: " . $e->getMessage());
+            return false;
+        }
+    }
+}
+?>
