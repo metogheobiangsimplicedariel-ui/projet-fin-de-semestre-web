@@ -1,0 +1,100 @@
+/* assets/professeur/css/professeur.css */
+
+/* Style général */
+.tableau-saisie-container {
+    overflow-x: auto;
+    max-height: 70vh;
+    border: 1px solid #dee2e6;
+}
+
+/* En-têtes fixes */
+th {
+    position: sticky;
+    top: 0;
+    background: #343a40;
+    color: white;
+    z-index: 10;
+}
+
+/* Cellules fixes */
+td:first-child {
+    position: sticky;
+    left: 0;
+    background: white;
+    z-index: 5;
+    border-right: 2px solid #dee2e6;
+}
+
+/* Indicateurs de saisie */
+.note-input.saving {
+    background-color: #fff3cd !important;
+    border-color: #ffeaa7 !important;
+}
+
+.note-input.saved {
+    background-color: #d1e7dd !important;
+    border-color: #a3cfbb !important;
+}
+
+.note-input.is-invalid {
+    border-color: #dc3545 !important;
+    background-color: #f8d7da !important;
+}
+
+.note-input.is-valid {
+    border-color: #198754 !important;
+    background-color: #d1e7dd !important;
+}
+
+/* Surbrillance au survol */
+tr:hover td {
+    background-color: #f8f9fa !important;
+}
+
+.cellule-note:hover {
+    background-color: #e9ecef !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: 0.9rem;
+    }
+    
+    .note-input {
+        font-size: 0.8rem;
+        padding: 0.2rem;
+    }
+}
+
+/* Barre de progression personnalisée */
+.progress {
+    height: 20px;
+}
+
+.progress-bar {
+    transition: width 0.3s ease;
+}
+
+/* Boutons d'action */
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+/* Tooltip personnalisé */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
+}
+
+/* Animation de chargement */
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.loading {
+    animation: pulse 1.5s infinite;
+}
