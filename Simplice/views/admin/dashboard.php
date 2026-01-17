@@ -1,36 +1,44 @@
-<?php 
+<?php
 
 $title = "Tableau de bord";
 
-require 'views/layout/header.php'; 
+require 'views/layout/header.php';
 ?>
 
 <div class="flex h-screen bg-gray-100 font-sans overflow-hidden">
 
-<?php require 'views/admin/sidebar.php' ?>
+    <?php require 'views/admin/sidebar.php' ?>
 
     <main class="flex-grow flex flex-col h-screen overflow-y-auto">
-        
+
         <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 sticky top-0 z-10 border-b border-gray-200">
             <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <span class="text-slate-400 font-normal">Dashboard /</span> Vue d'ensemble
             </h1>
 
             <div class="flex items-center gap-4">
+
                 <div class="text-right hidden md:block">
-                    <p class="text-sm font-bold text-gray-700">Administrateur</p>
-                    <p class="text-xs text-green-600 font-bold">● En ligne</p>
+                    <p class="text-sm font-bold text-gray-700">
+                        <?= htmlspecialchars($_SESSION['auth']['prenom'] . ' ' . $_SESSION['auth']['nom']) ?>
+                    </p>
+                    <p class="text-xs text-green-500 font-bold flex items-center justify-end gap-1">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span> En ligne
+                    </p>
                 </div>
                 <div class="h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-md border-2 border-red-500">
-                    <i class="fa-solid fa-user-tie"></i>
+                    <span class="font-bold text-sm">
+                        <?= strtoupper(substr($_SESSION['auth']['prenom'], 0, 1)) ?>
+                    </span>
                 </div>
+
             </div>
         </header>
 
         <div class="p-6 lg:p-10 space-y-8">
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                
+
                 <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 flex items-center justify-between">
                     <div>
                         <p class="text-xs text-gray-500 font-bold uppercase tracking-wide">Étudiants</p>
@@ -73,25 +81,25 @@ require 'views/layout/header.php';
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                
-                <button onclick="document.getElementById('modalAddStudent').classList.remove('hidden')" 
-                        class="flex items-center justify-center gap-4 p-6 bg-white border-2 border-dashed border-slate-300 rounded-xl text-slate-600 font-bold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition duration-200 group">
+
+                <button onclick="document.getElementById('modalAddStudent').classList.remove('hidden')"
+                    class="flex items-center justify-center gap-4 p-6 bg-white border-2 border-dashed border-slate-300 rounded-xl text-slate-600 font-bold hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition duration-200 group">
                     <div class="h-10 w-10 rounded-full bg-slate-100 group-hover:bg-blue-200 flex items-center justify-center transition">
                         <i class="fa-solid fa-plus"></i>
                     </div>
                     <span>Ajouter un étudiant</span>
                 </button>
 
-                <button onclick="document.getElementById('modalAddProf').classList.remove('hidden')" 
-                        class="flex items-center justify-center gap-4 p-6 bg-white border-2 border-dashed border-slate-300 rounded-xl text-slate-600 font-bold hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50 transition duration-200 group">
+                <button onclick="document.getElementById('modalAddProf').classList.remove('hidden')"
+                    class="flex items-center justify-center gap-4 p-6 bg-white border-2 border-dashed border-slate-300 rounded-xl text-slate-600 font-bold hover:border-purple-500 hover:text-purple-600 hover:bg-purple-50 transition duration-200 group">
                     <div class="h-10 w-10 rounded-full bg-slate-100 group-hover:bg-purple-200 flex items-center justify-center transition">
                         <i class="fa-solid fa-plus"></i>
                     </div>
                     <span>Ajouter un professeur</span>
                 </button>
 
-                <button onclick="alert('Module Annonces à venir !')" 
-                        class="flex items-center justify-center gap-4 p-6 bg-white border-2 border-dashed border-slate-300 rounded-xl text-slate-600 font-bold hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition duration-200 group">
+                <button onclick="alert('Module Annonces à venir !')"
+                    class="flex items-center justify-center gap-4 p-6 bg-white border-2 border-dashed border-slate-300 rounded-xl text-slate-600 font-bold hover:border-orange-500 hover:text-orange-600 hover:bg-orange-50 transition duration-200 group">
                     <div class="h-10 w-10 rounded-full bg-slate-100 group-hover:bg-orange-200 flex items-center justify-center transition">
                         <i class="fa-solid fa-bullhorn"></i>
                     </div>
@@ -118,69 +126,71 @@ require 'views/layout/header.php';
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 text-sm">
-                            
-                            <?php if(empty($latest_users)): ?>
-                                <tr><td colspan="5" class="p-6 text-center text-gray-400">Aucune inscription récente.</td></tr>
-                            <?php else: ?>
-                                <?php foreach($latest_users as $u): ?>
-                                <tr class="hover:bg-gray-50 transition">
-                                    
-                                    <td class="p-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="h-9 w-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs uppercase border border-slate-200">
-                                                <?= substr($u['prenom'], 0, 1) . substr($u['nom'], 0, 1) ?>
-                                            </div>
-                                            <div>
-                                                <p class="font-bold text-gray-800"><?= htmlspecialchars($u['nom'] . ' ' . $u['prenom']) ?></p>
-                                                <p class="text-xs text-gray-500"><?= htmlspecialchars($u['email']) ?></p>
-                                            </div>
-                                        </div>
-                                    </td>
 
-                                    <td class="p-4">
-                                        <?php 
+                            <?php if (empty($latest_users)): ?>
+                                <tr>
+                                    <td colspan="5" class="p-6 text-center text-gray-400">Aucune inscription récente.</td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($latest_users as $u): ?>
+                                    <tr class="hover:bg-gray-50 transition">
+
+                                        <td class="p-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="h-9 w-9 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs uppercase border border-slate-200">
+                                                    <?= substr($u['prenom'], 0, 1) . substr($u['nom'], 0, 1) ?>
+                                                </div>
+                                                <div>
+                                                    <p class="font-bold text-gray-800"><?= htmlspecialchars($u['nom'] . ' ' . $u['prenom']) ?></p>
+                                                    <p class="text-xs text-gray-500"><?= htmlspecialchars($u['email']) ?></p>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <td class="p-4">
+                                            <?php
                                             $badges = [
                                                 'etudiant'   => 'bg-blue-50 text-blue-700 border-blue-100',
                                                 'professeur' => 'bg-purple-50 text-purple-700 border-purple-100',
                                                 'admin'      => 'bg-red-50 text-red-700 border-red-100'
                                             ];
                                             $css = $badges[$u['role']] ?? 'bg-gray-50 text-gray-600';
-                                        ?>
-                                        <span class="<?= $css ?> px-2 py-1 rounded-md text-xs font-bold uppercase border">
-                                            <?= htmlspecialchars($u['role']) ?>
-                                        </span>
-                                    </td>
+                                            ?>
+                                            <span class="<?= $css ?> px-2 py-1 rounded-md text-xs font-bold uppercase border">
+                                                <?= htmlspecialchars($u['role']) ?>
+                                            </span>
+                                        </td>
 
-                                    <td class="p-4 text-gray-600 font-medium">
-                                        <?= $u['date_fmt'] ?>
-                                    </td>
+                                        <td class="p-4 text-gray-600 font-medium">
+                                            <?= $u['date_fmt'] ?>
+                                        </td>
 
-                                    <td class="p-4">
-                                        <?php if($u['actif']): ?>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="h-2 w-2 rounded-full bg-green-500"></span>
-                                                <span class="text-green-700 font-bold text-xs">Actif</span>
+                                        <td class="p-4">
+                                            <?php if ($u['actif']): ?>
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="h-2 w-2 rounded-full bg-green-500"></span>
+                                                    <span class="text-green-700 font-bold text-xs">Actif</span>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="h-2 w-2 rounded-full bg-orange-400"></span>
+                                                    <span class="text-orange-600 font-bold text-xs">En attente</span>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td class="p-4 text-right">
+                                            <div class="flex justify-end gap-2">
+                                                <a href="index.php?page=admin_users&edit=<?= $u['id'] ?>" class="text-gray-400 hover:text-blue-600 p-1">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </a>
+                                                <a href="index.php?page=delete_user&id=<?= $u['id'] ?>" onclick="return confirm('Supprimer ?')" class="text-gray-400 hover:text-red-600 p-1">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </a>
                                             </div>
-                                        <?php else: ?>
-                                            <div class="flex items-center gap-1.5">
-                                                <span class="h-2 w-2 rounded-full bg-orange-400"></span>
-                                                <span class="text-orange-600 font-bold text-xs">En attente</span>
-                                            </div>
-                                        <?php endif; ?>
-                                    </td>
+                                        </td>
 
-                                    <td class="p-4 text-right">
-                                        <div class="flex justify-end gap-2">
-                                            <a href="index.php?page=admin_users&edit=<?= $u['id'] ?>" class="text-gray-400 hover:text-blue-600 p-1">
-                                                <i class="fa-solid fa-pen-to-square"></i>
-                                            </a>
-                                            <a href="index.php?page=delete_user&id=<?= $u['id'] ?>" onclick="return confirm('Supprimer ?')" class="text-gray-400 hover:text-red-600 p-1">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </a>
-                                        </div>
-                                    </td>
-
-                                </tr>
+                                    </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
 
@@ -202,7 +212,8 @@ require 'views/layout/header.php';
                 </div>
                 <form action="index.php?page=admin_users" method="POST" class="space-y-4">
                     <input type="hidden" name="action" value="create_user">
-                    <input type="hidden" name="role" value="etudiant"> <div class="grid grid-cols-2 gap-4">
+                    <input type="hidden" name="role" value="etudiant">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nom</label>
                             <input type="text" name="nom" required class="w-full border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
@@ -238,7 +249,8 @@ require 'views/layout/header.php';
                 </div>
                 <form action="index.php?page=admin_users" method="POST" class="space-y-4">
                     <input type="hidden" name="action" value="create_user">
-                    <input type="hidden" name="role" value="professeur"> <div class="grid grid-cols-2 gap-4">
+                    <input type="hidden" name="role" value="professeur">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nom</label>
                             <input type="text" name="nom" required class="w-full border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-purple-500 outline-none">

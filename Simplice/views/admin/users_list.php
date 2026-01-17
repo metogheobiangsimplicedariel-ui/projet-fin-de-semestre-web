@@ -1,4 +1,8 @@
-<?php require 'views/layout/header.php'; ?>
+<?php
+// views/admin/users_list.php
+$title = "Studify - Gestion des Utilisateurs";
+require 'views/layout/header.php';
+?>
 
 <div class="flex h-screen bg-gray-100 font-sans overflow-hidden">
 
@@ -22,7 +26,22 @@
         </header>
 
         <div class="p-6 lg:p-10 space-y-8">
-            
+
+            <?php if (isset($_SESSION['success'])): ?>
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
+                    <i class="fa-solid fa-check-circle mr-2"></i>
+                    <?= $_SESSION['success'];
+                    unset($_SESSION['success']); ?>
+                </div>
+            <?php endif; ?>
+            <?php if (isset($_SESSION['error'])): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+                    <i class="fa-solid fa-exclamation-circle mr-2"></i>
+                    <?= $_SESSION['error'];
+                    unset($_SESSION['error']); ?>
+                </div>
+            <?php endif; ?>
+
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <div class="flex items-center gap-2">
                     <h3 class="text-lg font-bold text-gray-800">Membres</h3>
@@ -31,28 +50,26 @@
                     </span>
                 </div>
 
-                <form action="index.php" method="GET" class="flex items-center gap-2">
-                    <input type="hidden" name="page" value="admin_users">
-                    
-                    <div class="relative">
-                        <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" 
-                               name="q" 
-                               value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q']) : '' ?>" 
-                               placeholder="Rechercher..." 
-                               class="pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 w-64 transition">
-                    </div>
-                    
-                    <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
-                        Filtrer
-                    </button>
-                    
-                    <?php if(isset($_GET['q'])): ?>
-                        <a href="index.php?page=admin_users" class="text-red-500 text-sm hover:underline ml-2">
-                            <i class="fa-solid fa-xmark"></i>
-                        </a>
-                    <?php endif; ?>
-                </form>
+                <div class="flex gap-3 w-full md:w-auto">
+                    <form action="index.php" method="GET" class="flex items-center gap-2 flex-grow md:flex-grow-0">
+                        <input type="hidden" name="page" value="admin_users">
+
+                        <div class="relative w-full md:w-64">
+                            <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" name="q" value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q']) : '' ?>" placeholder="Rechercher..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500 transition">
+                        </div>
+
+                        <button type="submit" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition">
+                            Filtrer
+                        </button>
+
+                        <?php if (isset($_GET['q'])): ?>
+                            <a href="index.php?page=admin_users" class="text-red-500 text-sm hover:underline ml-1" title="Effacer">
+                                <i class="fa-solid fa-xmark"></i>
+                            </a>
+                        <?php endif; ?>
+                    </form>
+                </div>
             </div>
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -68,67 +85,70 @@
                         </thead>
 
                         <tbody class="divide-y divide-gray-100 text-sm">
-                            <?php foreach($all_users as $u): ?>
-                            <tr class="hover:bg-gray-50 transition group">
-                                
-                                <td class="p-4">
-                                    <div class="flex items-center gap-3">
-                                        <div class="h-9 w-9 rounded bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs uppercase">
-                                            <?= substr($u['prenom'], 0, 1) . substr($u['nom'], 0, 1) ?>
+                            <?php foreach ($all_users as $u): ?>
+                                <tr class="hover:bg-gray-50 transition group">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="h-9 w-9 rounded bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs uppercase">
+                                                <?= substr($u['prenom'], 0, 1) . substr($u['nom'], 0, 1) ?>
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-gray-800"><?= htmlspecialchars($u['nom'] . ' ' . $u['prenom']) ?></p>
+                                                <p class="text-xs text-gray-500"><?= htmlspecialchars($u['email']) ?></p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p class="font-bold text-gray-800"><?= htmlspecialchars($u['nom'] . ' ' . $u['prenom']) ?></p>
-                                            <p class="text-xs text-gray-500"><?= htmlspecialchars($u['email']) ?></p>
-                                        </div>
-                                    </div>
-                                </td>
+                                    </td>
 
-                                <td class="p-4">
-                                    <?php 
+                                    <td class="p-4">
+                                        <?php
                                         $badges = [
                                             'admin' => 'bg-red-100 text-red-700 border-red-200',
                                             'professeur' => 'bg-purple-100 text-purple-700 border-purple-200',
                                             'etudiant' => 'bg-blue-100 text-blue-700 border-blue-200'
                                         ];
                                         $cssClass = $badges[$u['role']] ?? 'bg-gray-100 text-gray-600 border-gray-200';
-                                    ?>
-                                    <span class="<?= $cssClass ?> border px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                                        <?= htmlspecialchars($u['role']) ?>
-                                    </span>
-                                </td>
+                                        ?>
+                                        <span class="<?= $cssClass ?> border px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                                            <?= htmlspecialchars($u['role']) ?>
+                                        </span>
+                                    </td>
 
-                                <td class="p-4 text-gray-600">
-                                    <i class="fa-regular fa-calendar mr-2 text-gray-400"></i>
-                                    <?= isset($u['date_inscription']) ? $u['date_inscription'] : 'N/A' ?>
-                                </td>
+                                    <td class="p-4 text-gray-600">
+                                        <i class="fa-regular fa-calendar mr-2 text-gray-400"></i>
+                                        <?= isset($u['date_inscription']) ? $u['date_inscription'] : 'N/A' ?>
+                                    </td>
 
-                               <td class="p-4 text-right">
-                                    <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        
-                                        <button 
-                                            onclick="openEditModal(this)"
-                                            data-id="<?= $u['id'] ?>"
-                                            data-nom="<?= htmlspecialchars($u['nom']) ?>"
-                                            data-prenom="<?= htmlspecialchars($u['prenom']) ?>"
-                                            data-email="<?= htmlspecialchars($u['email']) ?>"
-                                            data-role="<?= htmlspecialchars($u['role']) ?>"
-                                            class="p-2 bg-white border border-gray-200 rounded hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition" 
-                                            title="Éditer">
-                                            <i class="fa-solid fa-pen"></i>
-                                        </button>
-                                        
-                                        <form method="POST" action="index.php?page=admin_users" onsubmit="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?');">
-                                            <input type="hidden" name="action" value="delete_user">
-                                            <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                            
-                                            <button type="submit" class="p-2 bg-white border border-gray-200 rounded hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition" title="Supprimer">
-                                                <i class="fa-solid fa-trash"></i>
+                                    <td class="p-4 text-right">
+                                        <div class="flex items-center justify-end gap-2 opacity-100 group-hover:opacity-60 transition-opacity">
+
+                                            <button
+                                                onclick="openEditModal(this)"
+                                                data-id="<?= $u['id'] ?>"
+                                                data-nom="<?= htmlspecialchars($u['nom']) ?>"
+                                                data-prenom="<?= htmlspecialchars($u['prenom']) ?>"
+                                                data-email="<?= htmlspecialchars($u['email']) ?>"
+                                                data-role="<?= $u['role'] ?>"
+                                                class="p-2 mb-3">
+                                                <i class="fa-solid fa-pen hover:text-blue-600"></i>
                                             </button>
-                                        </form>
 
-                                    </div>
-                                </td>
-                            </tr>
+                                            <?php if ($u['id'] !== $_SESSION['auth']['id']): ?>
+                                                <form method="POST" action="index.php?page=admin_users" onsubmit="return confirm('Supprimer ?');">
+                                                    <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+                                                    <input type="hidden" name="action" value="delete_user">
+                                                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
+
+                                                    <button type="submit" class="p-2 hover:text-red-600" title="Supprimer">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            <?php else: ?>
+                                                <span class="text-xs text-gray-400 italic px-2">Vous</span>
+                                            <?php endif; ?>
+
+                                        </div>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -147,35 +167,36 @@
             </button>
         </div>
 
-        <form method="POST" class="space-y-4">
+        <form method="POST" action="index.php?page=admin_users" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
             <input type="hidden" name="action" value="update_user">
             <input type="hidden" name="user_id" id="edit_user_id">
-            
+
             <div class="grid grid-cols-1 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nom</label>
-                    <input type="text" name="nom" id="edit_nom" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" name="nom" id="edit_nom" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-studify-primary outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Prénom</label>
-                    <input type="text" name="prenom" id="edit_prenom" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" name="prenom" id="edit_prenom" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-studify-primary outline-none">
                 </div>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
-                <input type="email" name="email" id="edit_email" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                <input type="email" name="email" id="edit_email" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-studify-primary outline-none">
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Rôle</label>
-                <select name="role" id="edit_role" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none">
+                <select name="role" id="edit_role" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-studify-primary outline-none">
                     <option value="etudiant">Etudiant</option>
                     <option value="professeur">Professeur</option>
                     <option value="admin">Administrateur</option>
                 </select>
             </div>
-    
+
             <div class="pt-4 flex justify-end gap-3">
                 <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition">Annuler</button>
                 <button type="submit" class="bg-studify-blue text-white px-5 py-2.5 rounded-lg font-bold shadow-md hover:bg-blue-700 transition">Enregistrer</button>
@@ -185,25 +206,25 @@
 </div>
 
 <script>
-function openEditModal(button) {
-    const id = button.getAttribute('data-id');
-    const nom = button.getAttribute('data-nom');
-    const prenom = button.getAttribute('data-prenom');
-    const email = button.getAttribute('data-email');
-    const role = button.getAttribute('data-role');
+    function openEditModal(button) {
+        const id = button.getAttribute('data-id');
+        const nom = button.getAttribute('data-nom');
+        const prenom = button.getAttribute('data-prenom');
+        const email = button.getAttribute('data-email');
+        const role = button.getAttribute('data-role');
 
-    document.getElementById('edit_user_id').value = id;
-    document.getElementById('edit_nom').value = nom;
-    document.getElementById('edit_prenom').value = prenom;
-    document.getElementById('edit_email').value = email;
-    document.getElementById('edit_role').value = role;
+        document.getElementById('edit_user_id').value = id;
+        document.getElementById('edit_nom').value = nom;
+        document.getElementById('edit_prenom').value = prenom;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_role').value = role;
 
-    document.getElementById('modelEditUser').classList.remove('hidden');
-}
+        document.getElementById('modelEditUser').classList.remove('hidden');
+    }
 
-function closeEditModal() {
-    document.getElementById('modelEditUser').classList.add('hidden');
-}
+    function closeEditModal() {
+        document.getElementById('modelEditUser').classList.add('hidden');
+    }
 </script>
 
 <?php require 'views/layout/footer.php'; ?>
