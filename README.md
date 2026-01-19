@@ -120,9 +120,9 @@ Suivez ces étapes pour déployer l'application localement :
 1.  Ouvrez votre navigateur web.
 2.  Accédez à l'URL : `http://localhost/web/index.php`.
 3.  Connectez-vous avec les identifiants par défaut :
-    - **Admin :** `admin@universite.fr` / `password`
-    - **Professeur :** `prof@email.com` / `password`
-    - **Étudiant :** `etudiant@email.com` / `password`
+    - **Admin :** `admin@gmail.fr` / `admin`
+    - **Professeur :** `merlin@gmail.com` / `123456`
+    - **Étudiant :** `gamesjacsons@gmail.com` / `azerty12`
 
 ---
 
