@@ -13,9 +13,9 @@ class Database
     private function __construct()
     {
         $host = 'localhost';
-        $db   = 'ecole_db';
+        $db   = 'gestion_notes';
         $user = 'root';
-        $pass = 'root';
+        $pass = '';
         $charset = 'utf8mb4';
 
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

@@ -14,14 +14,7 @@ class Result
         $this->db = Database::getConnection();
     }
 
-    /**
-     * Récupère la "Matrice" des résultats pour une période
-     * Retourne : [
-     * 'etudiants' => [...liste...],
-     * 'matieres'  => [...liste...],
-     * 'moyennes'  => [ etudiant_id => [ matiere_id => 14.5, ... ] ]
-     * ]
-     */
+
     public function getDeliberationData($periode_id)
     {
         // 1. Récupérer toutes les matières de la période (celles qui ont des notes)
